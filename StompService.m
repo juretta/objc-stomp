@@ -50,6 +50,12 @@
     [self sendCommand:@"SUBSCRIBE" headers:headers body:nil];
 }
 
+- (void)subscribeToDestination:(NSString *)destination withAck:(NSString *) ackMode {
+	// TODO validate ack
+	NSDictionary *headers = [NSDictionary dictionaryWithObjectsAndKeys: destination, @"destination", ackMode, @"ack", nil];
+    [self sendCommand:@"SUBSCRIBE" headers:headers body:nil];
+}
+
 - (void)subscribeToDestination:(NSString *)destination withHeader:(NSDictionary *) header {
 	NSMutableDictionary *headers = [[NSMutableDictionary alloc] initWithDictionary:header];
 	[headers setObject:destination forKey:@"destination"];
@@ -109,6 +115,7 @@
 }
 
 -(void)receiveCommand:(NSString *)command headers:(NSDictionary *)headers body:(NSString *)body {
+	NSLog(@"receiveCommand '%@' [%@], @%", command, headers, body);
 	if([command isEqual:@"CONNECTED"]) {
 		[self.delegate stompServiceDidConnect:self];
 	} else if([command isEqual:@"MESSAGE"]) {
@@ -120,17 +127,6 @@
 
 - (void)readFrame {
 	[self.sock readDataToData:[AsyncSocket ZeroData] withTimeout:-1 tag:0];
-}
-
-
-
--(void) dealloc {
-	delegate = nil;
-	[sock release];
-	[host release];
-	[login release];
-	[passcode release];
-	[super dealloc];
 }
 
 
@@ -176,18 +172,24 @@
 }
 
 - (void)onSocketDidDisconnect:(AsyncSocket *)sock {
+	if([self delegate] && [[self delegate] respondsToSelector:@selector(stompServiceDidDisconnect:)]) {
+		[[self delegate] stompServiceDidDisconnect: self];
+	}
 }
 
 - (void)onSocket:(AsyncSocket *)sock willDisconnectWithError:(NSError *)err {
 }
 
+#pragma mark -
+#pragma mark Memory management
+-(void) dealloc {
+	delegate = nil;
+	
+	[passcode release];
+	[login release];
+	[host release];
+	[sock release];
+	[super dealloc];
+}
+
 @end
-
-
-// This initialization function gets called when we import the Ruby module.
-// It doesn't need to do anything because the RubyCocoa bridge will do
-// all the initialization work.
-// The rbiphonetest test framework automatically generates bundles for 
-// each objective-c class containing the following line. These
-// can be used by your tests.
-void Init_StompService() { }

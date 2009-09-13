@@ -8,11 +8,6 @@
 // This class is in the public domain.
 // by Scott Raymond <sco@scottraymond.net>.
 //
-// Slightly modified: Stefan Saasen <stefan@coravy.com>: 
-//
-//  * Added overloaded method to allow the inclusion of a head dictionary (can be used to set the "ack" mode)
-//  * Changed parsing of header fields to cope with ":" in header values
-//
 #import <Foundation/Foundation.h>
 #import "AsyncSocket.h"
 
@@ -21,6 +16,8 @@
 @protocol StompServiceDelegate <NSObject>
 - (void)stompServiceDidConnect:(StompService *)stompService;
 - (void)stompService:(StompService *)stompService gotMessage:(NSString *)body withHeader:(NSDictionary *)messageHeader;
+@optional
+- (void)stompServiceDidDisconnect:(StompService *)stompService;
 @end
 
 @interface StompService : NSObject {
@@ -45,6 +42,7 @@
 - (void)connect;
 - (void)sendBody:(NSString *)body toDestination:(NSString *)destination;
 - (void)subscribeToDestination:(NSString *)destination;
+- (void)subscribeToDestination:(NSString *)destination withAck:(NSString *) ackMode;
 - (void)subscribeToDestination:(NSString *)destination withHeader:(NSDictionary *) header;
 - (void)unsubscribeToDestination:(NSString *)destination;
 - (void)begin:(NSString *)transaction;
