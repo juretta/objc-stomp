@@ -1,59 +1,66 @@
 STOMP client for Objective-C
 ============================
 
-This is a slightly modified STOMP client based on
+This is a simple STOMP client based on
 
-* http://gist.github.com/72935 from Scott Raymond <sco@scottraymond.net>
+* an initial implementation (StompService) from Scott Raymond <sco@scottraymond.net> (see http://gist.github.com/72935)
 * and AsynSocket: http://code.google.com/p/cocoaasyncsocket/
 
 
 Usage
 -----
 
-Add AsynSocket.{h,m} and StompService.{h,m} to your project.
+Add AsynSocket.{h,m} and CRVStompClient.{h,m} to your project.
 
 MyExample.h
 
 	#import <Foundation/Foundation.h>
-	@protocol StompServiceDelegate;
+	
+	@class CRVStompClient;
+	@protocol CRVStompClientDelegate;
 
 
-	@interface MyExample : NSObject<StompServiceDelegate> {
-    
+	@interface MyExample : NSObject<CRVStompClientDelegate> {
+    	@private
+		CRVStompClient *service;
 	}
-	@property(nonatomic, retain) StompService *service;
+	@property(nonatomic, retain) CRVStompClient *service;
 
 	@end
 
 
 In MyExample.m
 
+	#define kUsername	@"USERNAME"
+	#define kPassword	@"PASS"
+	#define kQueueName	@"/topic/systemMessagesTopic"
+
 	-(void) aMethod {
-		StompService *service = [[StompService alloc] 
+		CRVStompClient *s = [[CRVStompClient alloc] 
 				initWithHost:@"localhost" 
 						port:61613 
 						login:@"MYLOGINNAME" 
 					passcode:@"MYLOGINPASSWORD" 
 					delegate:self];
-		[service connect];
+		[s connect];
 	
 
 		NSDictionary *headers = [NSDictionary dictionaryWithObjectsAndKeys: 	
 				@"client", @"ack", 
 				@"true", @"activemq.dispatchAsync",
 				@"1", @"activemq.prefetchSize", nil];
-		[service subscribeToDestination:@"/queue/name-abc" withHeader: headers];
+		[s subscribeToDestination:kQueueName withHeader: headers];
 	
-		[self setService: service];
-		[service release];
+		[self setService: s];
+		[s release];
 	}
 	
-	#pragma mark StompServiceDelegate
-	- (void)stompServiceDidConnect:(StompService *)stompService {
+	#pragma mark CRVStompClientDelegate
+	- (void)stompClientDidConnect:(CRVStompClient *)stompService {
 			NSLog(@"stompServiceDidConnect");
 	}
 
-	- (void)stompService:(StompService *)stompService gotMessage:(NSString *)body withHeader:(NSDictionary *)messageHeader {
+	- (void)stompClient:(CRVStompClient *)stompService messageReceived:(NSString *)body withHeader:(NSDictionary *)messageHeader {
 		NSLog(@"gotMessage body: %@, header: %@", body, messageHeader);
 		NSLog(@"Message ID: %@", [messageHeader valueForKey:@"message-id"]);
 		// If we have successfully received the message ackknowledge it.
@@ -61,6 +68,7 @@ In MyExample.m
 	}
 	
 	- (void)dealloc {
+		[service unsubscribeFromDestination: kQueueName];
 		[service release];
 		[super dealloc];
 	}
