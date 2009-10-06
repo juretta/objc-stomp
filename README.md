@@ -3,14 +3,14 @@ STOMP client for Objective-C
 
 This is a simple STOMP client based on
 
-* an initial implementation (StompService) from Scott Raymond <sco@scottraymond.net> (see http://gist.github.com/72935)
-* and AsynSocket: http://code.google.com/p/cocoaasyncsocket/
+* an initial implementation (StompService) from Scott Raymond <sco@scottraymond.net> (see [http://gist.github.com/72935](http://gist.github.com/72935))
+* and AsynSocket: [http://code.google.com/p/cocoaasyncsocket/](http://code.google.com/p/cocoaasyncsocket/)
 
 
 Documentation
 -------------
 
-http://code.coravy.com/confluence/display/OpenSource/Objc-Stomp
+[http://code.coravy.com/confluence/display/OpenSource/Stomp+client+for+Objective-C](http://code.coravy.com/confluence/display/OpenSource/Stomp+client+for+Objective-C)
 
 
 Usage
