@@ -10,7 +10,7 @@ This is a simple STOMP client based on
 Documentation
 -------------
 
-[http://code.coravy.com/confluence/display/OpenSource/Stomp+client+for+Objective-C](http://code.coravy.com/confluence/display/OpenSource/Stomp+client+for+Objective-C)
+[http://dev.coravy.com/wiki/display/OpenSource/Stomp+client+for+Objective-C](http://dev.coravy.com/wiki/display/OpenSource/Stomp+client+for+Objective-C)
 
 
 Usage
