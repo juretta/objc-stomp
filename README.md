@@ -41,12 +41,14 @@ In MyExample.m
 	#define kPassword	@"PASS"
 	#define kQueueName	@"/topic/systemMessagesTopic"
 
+	[...]
+
 	-(void) aMethod {
 		CRVStompClient *s = [[CRVStompClient alloc] 
 				initWithHost:@"localhost" 
 						port:61613 
-						login:@"MYLOGINNAME" 
-					passcode:@"MYLOGINPASSWORD" 
+						login:kUsername
+					passcode:kQueueName
 					delegate:self];
 		[s connect];
 	
