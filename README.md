@@ -7,6 +7,12 @@ This is a simple STOMP client based on
 * and AsynSocket: http://code.google.com/p/cocoaasyncsocket/
 
 
+Documentation
+-------------
+
+http://code.coravy.com/confluence/display/OpenSource/Objc-Stomp
+
+
 Usage
 -----
 
