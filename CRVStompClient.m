@@ -197,7 +197,7 @@
 }
 
 - (void)receiveFrame:(NSString *)command headers:(NSDictionary *)headers body:(NSString *)body {
-	NSLog(@"receiveCommand '%@' [%@], @%", command, headers, body);
+	//NSLog(@"receiveCommand '%@' [%@], @%", command, headers, body);
 	
 	// Connected
 	if([kResponseFrameConnected isEqual:command]) {
