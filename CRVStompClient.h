@@ -8,8 +8,8 @@
 // 
 //  Requires the AsyncSocket library
 //  See: http://code.google.com/p/cocoaasyncsocket/
-//
-//  This class is in the public domain.
+//  
+//  See: LICENSE
 //	Stefan Saasen <stefan@coravy.com>
 //  Based on StompService.{h,m} by Scott Raymond <sco@scottraymond.net>.
 
