@@ -44,6 +44,7 @@ typedef enum {
 	NSString *passcode;
 	NSString *sessionId;
 	BOOL doAutoconnect;
+	NSStringEncoding encoding;
 }
 
 @property (nonatomic, assign) id<CRVStompClientDelegate> delegate;
@@ -61,6 +62,8 @@ typedef enum {
 		  delegate:(id<CRVStompClientDelegate>)theDelegate
 	   autoconnect:(BOOL) autoconnect;
 
+
+- (void)setEncoding:(NSStringEncoding) encoding; 
 - (void)connect;
 - (void)sendMessage:(NSString *)theMessage toDestination:(NSString *)destination;
 - (void)subscribeToDestination:(NSString *)destination;

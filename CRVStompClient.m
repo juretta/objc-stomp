@@ -63,7 +63,7 @@
 @implementation CRVStompClient
 
 @synthesize delegate;
-@synthesize socket, host, port, login, passcode, sessionId;
+@synthesize socket, host, port, login, passcode, sessionId, encoding;
 
 - (id)init {
 	return [self initWithHost:@"localhost" port:kStompDefaultPort login:nil passcode:nil delegate:nil];
@@ -87,6 +87,9 @@
 		
 		doAutoconnect = autoconnect;
 		
+		// Default encoding: http://stomp.codehaus.org/Character+Encoding
+		encoding = NSUTF8StringEncoding;
+		
 		AsyncSocket *theSocket = [[AsyncSocket alloc] initWithDelegate:self];
 		[self setSocket: theSocket];
 		[theSocket release];
@@ -107,6 +110,10 @@
 
 #pragma mark -
 #pragma mark Public methods
+- (void)setEncoding:(NSStringEncoding) theEncoding {
+	encoding = theEncoding;
+}
+
 - (void)connect {
 	NSDictionary *headers = [NSDictionary dictionaryWithObjectsAndKeys: [self login], @"login", [self passcode], @"passcode", nil];
 	[self sendFrame:kCommandConnect withHeader:headers andBody: nil];
@@ -189,7 +196,7 @@
 		[frameString appendString:body];
 	}
     [frameString appendString:kControlChar];
-	[[self socket] writeData:[frameString dataUsingEncoding:NSASCIIStringEncoding] withTimeout:kDefaultTimeout tag:123];
+	[[self socket] writeData:[frameString dataUsingEncoding:encoding] withTimeout:kDefaultTimeout tag:123];
 }
 
 - (void) sendFrame:(NSString *) command {
