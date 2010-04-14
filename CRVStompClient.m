@@ -239,7 +239,7 @@
 - (void)onSocket:(AsyncSocket *)sock didReadData:(NSData*)data withTag:(long)tag {
 	NSData *strData = [data subdataWithRange:NSMakeRange(0, [data length])];
 	NSString *msg = [[NSString alloc] initWithData:strData encoding:NSUTF8StringEncoding];
-    NSMutableArray *contents = (NSMutableArray *)[msg componentsSeparatedByString:@"\n"];
+    NSMutableArray *contents = (NSMutableArray *)[[msg componentsSeparatedByString:@"\n"] mutableCopy];
 	if([[contents objectAtIndex:0] isEqual:@""]) {
 		[contents removeObjectAtIndex:0];
 	}
@@ -267,6 +267,7 @@
 	[msg release];
 	[self receiveFrame:command headers:headers body:body];
 	[self readFrame];
+	[contents release];
 }
 
 - (void)onSocket:(AsyncSocket *)sock didConnectToHost:(NSString *)host port:(UInt16)port {
