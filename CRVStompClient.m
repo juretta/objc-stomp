@@ -71,6 +71,16 @@
 
 - (id)initWithHost:(NSString *)theHost 
 			  port:(NSUInteger)thePort 
+		  delegate:(id<CRVStompClientDelegate>)theDelegate
+	   autoconnect:(BOOL) autoconnect {
+	if(self = [self initWithHost:theHost port:thePort login:nil passcode:nil delegate:theDelegate autoconnect: NO]) {
+		anonymous = YES;
+	}
+	return self;
+}
+
+- (id)initWithHost:(NSString *)theHost 
+			  port:(NSUInteger)thePort 
 			 login:(NSString *)theLogin 
 		  passcode:(NSString *)thePasscode 
 		  delegate:(id<CRVStompClientDelegate>)theDelegate {
@@ -85,6 +95,7 @@
 	   autoconnect:(BOOL) autoconnect {
 	if(self = [super init]) {
 		
+		anonymous = NO;
 		doAutoconnect = autoconnect;
 		
 		AsyncSocket *theSocket = [[AsyncSocket alloc] initWithDelegate:self];
@@ -108,8 +119,12 @@
 #pragma mark -
 #pragma mark Public methods
 - (void)connect {
-	NSDictionary *headers = [NSDictionary dictionaryWithObjectsAndKeys: [self login], @"login", [self passcode], @"passcode", nil];
-	[self sendFrame:kCommandConnect withHeader:headers andBody: nil];
+	if(anonymous) {
+		[self sendFrame:kCommandConnect];
+	} else {
+		NSDictionary *headers = [NSDictionary dictionaryWithObjectsAndKeys: [self login], @"login", [self passcode], @"passcode", nil];
+		[self sendFrame:kCommandConnect withHeader:headers andBody: nil];
+	}
 	[self readFrame];
 }
 

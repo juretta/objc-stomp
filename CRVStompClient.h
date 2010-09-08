@@ -44,6 +44,7 @@ typedef enum {
 	NSString *passcode;
 	NSString *sessionId;
 	BOOL doAutoconnect;
+	BOOL anonymous;
 }
 
 @property (nonatomic, assign) id<CRVStompClientDelegate> delegate;
@@ -58,6 +59,14 @@ typedef enum {
 			  port:(NSUInteger)thePort 
 			 login:(NSString *)theLogin
 		  passcode:(NSString *)thePasscode 
+		  delegate:(id<CRVStompClientDelegate>)theDelegate
+	   autoconnect:(BOOL) autoconnect;
+
+/**
+ * Connects as an anonymous user. Suppresses "login" and "passcode" headers.
+ */
+- (id)initWithHost:(NSString *)theHost 
+			  port:(NSUInteger)thePort 
 		  delegate:(id<CRVStompClientDelegate>)theDelegate
 	   autoconnect:(BOOL) autoconnect;
 
