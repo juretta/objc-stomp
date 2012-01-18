@@ -129,8 +129,13 @@
 }
 
 - (void)sendMessage:(NSString *)theMessage toDestination:(NSString *)destination {
-	NSDictionary *headers = [NSDictionary dictionaryWithObjectsAndKeys: destination, @"destination", nil];
-    [self sendFrame:kCommandSend withHeader:headers andBody:theMessage];
+    [self sendMessage:theMessage toDestination:destination withHeaders:[NSDictionary dictionary]];
+}
+
+- (void)sendMessage:(NSString *)theMessage toDestination:(NSString *)destination withHeaders:(NSDictionary*)headers {
+	NSMutableDictionary *allHeaders = [NSMutableDictionary dictionaryWithDictionary:headers];
+    [allHeaders setValue:destination forKey:@"destination"];
+    [self sendFrame:kCommandSend withHeader:allHeaders andBody:theMessage];
 }
 
 - (void)subscribeToDestination:(NSString *)destination {
