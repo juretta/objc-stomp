@@ -72,6 +72,7 @@ typedef enum {
 
 - (void)connect;
 - (void)sendMessage:(NSString *)theMessage toDestination:(NSString *)destination;
+- (void)sendMessage:(NSString *)theMessage toDestination:(NSString *)destination withHeaders:(NSDictionary*)headers;
 - (void)subscribeToDestination:(NSString *)destination;
 - (void)subscribeToDestination:(NSString *)destination withAck:(CRVStompAckMode) ackMode;
 - (void)subscribeToDestination:(NSString *)destination withHeader:(NSDictionary *) header;
