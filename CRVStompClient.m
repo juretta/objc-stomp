@@ -306,6 +306,9 @@
 }
 
 - (void)onSocket:(AsyncSocket *)sock willDisconnectWithError:(NSError *)err {
+	if([[self delegate] respondsToSelector:@selector(stompClientWillDisconnect:withError:)]) {
+		[[self delegate] stompClientWillDisconnect:self withError:err];
+	}
 }
 
 #pragma mark -

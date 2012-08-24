@@ -29,6 +29,7 @@ typedef enum {
 
 @optional
 - (void)stompClientDidDisconnect:(CRVStompClient *)stompService;
+- (void)stompClientWillDisconnect:(CRVStompClient *)stompService withError:(NSError*)error;
 - (void)stompClientDidConnect:(CRVStompClient *)stompService;
 - (void)serverDidSendReceipt:(CRVStompClient *)stompService withReceiptId:(NSString *)receiptId;
 - (void)serverDidSendError:(CRVStompClient *)stompService withErrorMessage:(NSString *)description detailedErrorMessage:(NSString *) theMessage;
