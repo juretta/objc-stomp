@@ -209,7 +209,7 @@
 		[frameString appendString:body];
 	}
     [frameString appendString:kControlChar];
-	[[self socket] writeData:[frameString dataUsingEncoding:NSASCIIStringEncoding] withTimeout:kDefaultTimeout tag:123];
+	[[self socket] writeData:[frameString dataUsingEncoding:NSUTF8StringEncoding] withTimeout:kDefaultTimeout tag:123];
 }
 
 - (void) sendFrame:(NSString *) command {
