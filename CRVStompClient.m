@@ -118,14 +118,24 @@
 
 #pragma mark -
 #pragma mark Public methods
+
 - (void)connect {
+        [self connectWithHeaders:nil];
+}
+
+- (void)connectWithHeaders:(NSDictionary *)headers {
 	if(anonymous) {
-		[self sendFrame:kCommandConnect];
-	} else {
-		NSDictionary *headers = [NSDictionary dictionaryWithObjectsAndKeys: [self login], @"login", [self passcode], @"passcode", nil];
-		[self sendFrame:kCommandConnect withHeader:headers andBody: nil];
-	}
-	[self readFrame];
+      [self sendFrame:kCommandConnect withHeader:headers andBody:nil];
+   } else {
+      NSDictionary *connectHeaders = @{@"login": [self login], @"passcode": [self passcode]};
+      if (headers) {
+         NSDictionary *allHeaders = [NSMutableDictionary dictionaryWithDictionary:connectHeaders];
+         [allHeaders setValuesForKeysWithDictionary:headers];
+         connectHeaders = [NSDictionary dictionaryWithDictionary:allHeaders];
+      }
+      [self sendFrame:kCommandConnect withHeader:connectHeaders andBody: nil];
+   }
+   [self readFrame];
 }
 
 - (void)sendMessage:(NSString *)theMessage toDestination:(NSString *)destination {
