@@ -37,7 +37,6 @@ typedef enum {
 
 @interface CRVStompClient : NSObject {
 	@private
-	id<CRVStompClientDelegate> delegate;
 	AsyncSocket *socket;
 	NSString *host;
 	NSUInteger port;
@@ -48,7 +47,7 @@ typedef enum {
 	BOOL anonymous;
 }
 
-@property (nonatomic, assign) id<CRVStompClientDelegate> delegate;
+@property (nonatomic, weak) id<CRVStompClientDelegate> delegate;
 
 - (id)initWithHost:(NSString *)theHost 
 			  port:(NSUInteger)thePort 
