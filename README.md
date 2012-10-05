@@ -75,3 +75,10 @@ In MyExample.m
 		[super dealloc];
 	}
 	
+Contributors
+------------
+
+* Scott Raymond
+* Stefan Saasen
+* Graham Haworth
+* jbg
