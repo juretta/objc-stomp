@@ -7,12 +7,6 @@ This is a simple STOMP client based on
 * and AsynSocket: [http://code.google.com/p/cocoaasyncsocket/](http://code.google.com/p/cocoaasyncsocket/)
 
 
-Documentation
--------------
-
-[http://dev.coravy.com/wiki/display/OpenSource/Stomp+client+for+Objective-C](http://dev.coravy.com/wiki/display/OpenSource/Stomp+client+for+Objective-C)
-
-
 Usage
 -----
 
