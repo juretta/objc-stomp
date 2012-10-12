@@ -72,6 +72,7 @@ typedef enum {
 	   autoconnect:(BOOL) autoconnect;
 
 - (void)connect;
+- (void)connectWithHeaders:(NSDictionary *)headers;
 - (void)sendMessage:(NSString *)theMessage toDestination:(NSString *)destination;
 - (void)sendMessage:(NSString *)theMessage toDestination:(NSString *)destination withHeaders:(NSDictionary*)headers;
 - (void)subscribeToDestination:(NSString *)destination;
