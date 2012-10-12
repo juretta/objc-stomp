@@ -5,49 +5,46 @@
 //
 //  Implements the Stomp Protocol v1.0
 //  See: http://stomp.codehaus.org/Protocol
-// 
+//
 //  Requires the AsyncSocket library
 //  See: http://code.google.com/p/cocoaasyncsocket/
 //
 //  See: LICENSE
-//	Stefan Saasen <stefan@coravy.com>
+//	 Stefan Saasen <stefan@coravy.com>
 //  Based on StompService.{h,m} by Scott Raymond <sco@scottraymond.net>.
 #import "CRVStompClient.h"
 
-#define kStompDefaultPort			61613
-#define kDefaultTimeout				5	//
-
+#define kStompDefaultPort           61613
+#define kDefaultTimeout             5
 
 // ============= http://stomp.codehaus.org/Protocol =============
-#define kCommandConnect				@"CONNECT"
-#define kCommandSend				@"SEND"
-#define kCommandSubscribe			@"SUBSCRIBE"
-#define kCommandUnsubscribe			@"UNSUBSCRIBE"
-#define kCommandBegin				@"BEGIN"
-#define kCommandCommit				@"COMMIT"
-#define kCommandAbort				@"ABORT"
-#define kCommandAck					@"ACK"
-#define kCommandDisconnect			@"DISCONNECT"
-#define	kControlChar				[NSString stringWithFormat:@"\n%C", 0] // TODO -> static
+#define kCommandConnect             @"CONNECT"
+#define kCommandSend                @"SEND"
+#define kCommandSubscribe           @"SUBSCRIBE"
+#define kCommandUnsubscribe         @"UNSUBSCRIBE"
+#define kCommandBegin               @"BEGIN"
+#define kCommandCommit              @"COMMIT"
+#define kCommandAbort               @"ABORT"
+#define kCommandAck                 @"ACK"
+#define kCommandDisconnect          @"DISCONNECT"
+#define kControlChar                @"\0"
 
-#define kAckClient					@"client"
-#define kAckAuto					@"auto"
+#define kAckClient                  @"client"
+#define kAckAuto                    @"auto"
 
-#define kResponseHeaderSession		@"session"
-#define kResponseHeaderReceiptId	@"receipt-id"
+#define kResponseHeaderSession      @"session"
+#define kResponseHeaderReceiptId    @"receipt-id"
 #define kResponseHeaderErrorMessage @"message"
 
-#define kResponseFrameConnected		@"CONNECTED"
-#define kResponseFrameMessage		@"MESSAGE"
-#define kResponseFrameReceipt		@"RECEIPT"
-#define kResponseFrameError			@"ERROR"
+#define kResponseFrameConnected     @"CONNECTED"
+#define kResponseFrameMessage       @"MESSAGE"
+#define kResponseFrameReceipt       @"RECEIPT"
+#define kResponseFrameError         @"ERROR"
 // ============= http://stomp.codehaus.org/Protocol =============
-
-#define CRV_RELEASE_SAFELY(__POINTER) { [__POINTER release]; __POINTER = nil; }
 
 @interface CRVStompClient()
 @property (nonatomic, assign) NSUInteger port;
-@property (nonatomic, retain) AsyncSocket *socket;
+@property (nonatomic, strong) AsyncSocket *socket;
 @property (nonatomic, copy) NSString *host;
 @property (nonatomic, copy) NSString *login;
 @property (nonatomic, copy) NSString *passcode;
@@ -55,9 +52,9 @@
 @end
 
 @interface CRVStompClient(PrivateMethods)
-- (void) sendFrame:(NSString *) command withHeader:(NSDictionary *) header andBody:(NSString *) body;
-- (void) sendFrame:(NSString *) command;
-- (void) readFrame;
+- (void)sendFrame:(NSString *) command withHeader:(NSDictionary *) header andBody:(NSString *) body;
+- (void)sendFrame:(NSString *) command;
+- (void)readFrame;
 @end
 
 @implementation CRVStompClient
@@ -69,44 +66,44 @@
 	return [self initWithHost:@"localhost" port:kStompDefaultPort login:nil passcode:nil delegate:nil];
 }
 
-- (id)initWithHost:(NSString *)theHost 
-			  port:(NSUInteger)thePort 
-		  delegate:(id<CRVStompClientDelegate>)theDelegate
-	   autoconnect:(BOOL) autoconnect {
+- (id)initWithHost:(NSString *)theHost
+              port:(NSUInteger)thePort
+          delegate:(id<CRVStompClientDelegate>)theDelegate
+       autoconnect:(BOOL) autoconnect {
+
 	if(self = [self initWithHost:theHost port:thePort login:nil passcode:nil delegate:theDelegate autoconnect: NO]) {
 		anonymous = YES;
 	}
 	return self;
 }
 
-- (id)initWithHost:(NSString *)theHost 
-			  port:(NSUInteger)thePort 
-			 login:(NSString *)theLogin 
-		  passcode:(NSString *)thePasscode 
-		  delegate:(id<CRVStompClientDelegate>)theDelegate {
+- (id)initWithHost:(NSString *)theHost
+              port:(NSUInteger)thePort
+             login:(NSString *)theLogin
+          passcode:(NSString *)thePasscode
+          delegate:(id<CRVStompClientDelegate>)theDelegate {
+
 	return [self initWithHost:theHost port:thePort login:theLogin passcode:thePasscode delegate:theDelegate autoconnect: NO];
 }
 
-- (id)initWithHost:(NSString *)theHost 
-			  port:(NSUInteger)thePort 
-			 login:(NSString *)theLogin 
-		  passcode:(NSString *)thePasscode 
-		  delegate:(id<CRVStompClientDelegate>)theDelegate
-	   autoconnect:(BOOL) autoconnect {
-	if(self = [super init]) {
+- (id)initWithHost:(NSString *)theHost
+              port:(NSUInteger)thePort
+             login:(NSString *)theLogin
+          passcode:(NSString *)thePasscode
+          delegate:(id<CRVStompClientDelegate>)theDelegate
+       autoconnect:(BOOL) autoconnect {
+
+        if (self = [super init]) {
 		
 		anonymous = NO;
 		doAutoconnect = autoconnect;
 		
-		AsyncSocket *theSocket = [[AsyncSocket alloc] initWithDelegate:self];
-		[self setSocket: theSocket];
-		[theSocket release];
-		
-		[self setDelegate:theDelegate];
-		[self setHost: theHost];
-		[self setPort: thePort];
-		[self setLogin: theLogin];
-		[self setPasscode: thePasscode];
+                self.socket = [[AsyncSocket alloc] initWithDelegate:self];
+                self.delegate = theDelegate;
+                self.host = theHost;
+                self.port = thePort;
+                self.login = theLogin;
+                self.passcode = thePasscode;
 		
 		NSError *err;
 		if(![self.socket connectToHost:self.host onPort:self.port error:&err]) {
@@ -118,24 +115,34 @@
 
 #pragma mark -
 #pragma mark Public methods
+
 - (void)connect {
+        [self connectWithHeaders:nil];
+}
+
+- (void)connectWithHeaders:(NSDictionary *)headers {
 	if(anonymous) {
-		[self sendFrame:kCommandConnect];
-	} else {
-		NSDictionary *headers = [NSDictionary dictionaryWithObjectsAndKeys: [self login], @"login", [self passcode], @"passcode", nil];
-		[self sendFrame:kCommandConnect withHeader:headers andBody: nil];
-	}
-	[self readFrame];
+      [self sendFrame:kCommandConnect withHeader:headers andBody:nil];
+   } else {
+      NSDictionary *connectHeaders = @{@"login": [self login], @"passcode": [self passcode]};
+      if (headers) {
+         NSDictionary *allHeaders = [NSMutableDictionary dictionaryWithDictionary:connectHeaders];
+         [allHeaders setValuesForKeysWithDictionary:headers];
+         connectHeaders = [NSDictionary dictionaryWithDictionary:allHeaders];
+      }
+      [self sendFrame:kCommandConnect withHeader:connectHeaders andBody: nil];
+   }
+   [self readFrame];
 }
 
 - (void)sendMessage:(NSString *)theMessage toDestination:(NSString *)destination {
-    [self sendMessage:theMessage toDestination:destination withHeaders:[NSDictionary dictionary]];
+   [self sendMessage:theMessage toDestination:destination withHeaders:[NSDictionary dictionary]];
 }
 
 - (void)sendMessage:(NSString *)theMessage toDestination:(NSString *)destination withHeaders:(NSDictionary*)headers {
 	NSMutableDictionary *allHeaders = [NSMutableDictionary dictionaryWithDictionary:headers];
-    [allHeaders setValue:destination forKey:@"destination"];
-    [self sendFrame:kCommandSend withHeader:allHeaders andBody:theMessage];
+   [allHeaders setValue:destination forKey:@"destination"];
+   [self sendFrame:kCommandSend withHeader:allHeaders andBody:theMessage];
 }
 
 - (void)subscribeToDestination:(NSString *)destination {
@@ -153,39 +160,38 @@
 			break;
 	}
 	NSDictionary *headers = [NSDictionary dictionaryWithObjectsAndKeys: destination, @"destination", ack, @"ack", nil];
-    [self sendFrame:kCommandSubscribe withHeader:headers andBody:nil];
+   [self sendFrame:kCommandSubscribe withHeader:headers andBody:nil];
 }
 
 - (void)subscribeToDestination:(NSString *)destination withHeader:(NSDictionary *) header {
 	NSMutableDictionary *headers = [[NSMutableDictionary alloc] initWithDictionary:header];
 	[headers setObject:destination forKey:@"destination"];
-    [self sendFrame:kCommandSubscribe withHeader:headers andBody:nil];
-	[headers release];
+   [self sendFrame:kCommandSubscribe withHeader:headers andBody:nil];
 }
 
 - (void)unsubscribeFromDestination:(NSString *)destination {
 	NSDictionary *headers = [NSDictionary dictionaryWithObjectsAndKeys: destination, @"destination", nil];
-    [self sendFrame:kCommandUnsubscribe withHeader:headers andBody:nil];
+   [self sendFrame:kCommandUnsubscribe withHeader:headers andBody:nil];
 }
 
--(void)begin:(NSString *)transactionId {
+- (void)begin:(NSString *)transactionId {
 	NSDictionary *headers = [NSDictionary dictionaryWithObjectsAndKeys: transactionId, @"transaction", nil];
-    [self sendFrame:kCommandBegin withHeader:headers andBody:nil];
+   [self sendFrame:kCommandBegin withHeader:headers andBody:nil];
 }
 
 - (void)commit:(NSString *)transactionId {
 	NSDictionary *headers = [NSDictionary dictionaryWithObjectsAndKeys: transactionId, @"transaction", nil];
-    [self sendFrame:kCommandCommit withHeader:headers andBody:nil];
+   [self sendFrame:kCommandCommit withHeader:headers andBody:nil];
 }
 
 - (void)abort:(NSString *)transactionId {
 	NSDictionary *headers = [NSDictionary dictionaryWithObjectsAndKeys: transactionId, @"transaction", nil];
-    [self sendFrame:kCommandAbort withHeader:headers andBody:nil];
+   [self sendFrame:kCommandAbort withHeader:headers andBody:nil];
 }
 
 - (void)ack:(NSString *)messageId {
 	NSDictionary *headers = [NSDictionary dictionaryWithObjectsAndKeys: messageId, @"message-id", nil];
-    [self sendFrame:kCommandAck withHeader:headers andBody:nil];
+   [self sendFrame:kCommandAck withHeader:headers andBody:nil];
 }
 
 - (void)disconnect {
@@ -193,11 +199,11 @@
 	[[self socket] disconnectAfterReadingAndWriting];
 }
 
-
 #pragma mark -
 #pragma mark PrivateMethods
-- (void) sendFrame:(NSString *) command withHeader:(NSDictionary *) header andBody:(NSString *) body {
-    NSMutableString *frameString = [NSMutableString stringWithString: [command stringByAppendingString:@"\n"]];	
+
+- (void)sendFrame:(NSString *)command withHeader:(NSDictionary *)header andBody:(NSString *)body {
+   NSMutableString *frameString = [NSMutableString stringWithString: [command stringByAppendingString:@"\n"]];
 	for (id key in header) {
 		[frameString appendString:key];
 		[frameString appendString:@":"];
@@ -208,16 +214,16 @@
 		[frameString appendString:@"\n"];
 		[frameString appendString:body];
 	}
-    [frameString appendString:kControlChar];
+   [frameString appendString:@"\n"];
+   [frameString appendString:kControlChar];
 	[[self socket] writeData:[frameString dataUsingEncoding:NSUTF8StringEncoding] withTimeout:kDefaultTimeout tag:123];
 }
 
-- (void) sendFrame:(NSString *) command {
+- (void)sendFrame:(NSString *) command {
 	[self sendFrame:command withHeader:nil andBody:nil];
 }
 
 - (void)receiveFrame:(NSString *)command headers:(NSDictionary *)headers body:(NSString *)body {
-	//NSLog(@"receiveCommand '%@' [%@], @%", command, headers, body);
 	
 	// Connected
 	if([kResponseFrameConnected isEqual:command]) {
@@ -228,24 +234,24 @@
 		// store session-id
 		NSString *sessId = [headers valueForKey:kResponseHeaderSession];
 		[self setSessionId: sessId];
-	
-	// Response 
+
+      // Response
 	} else if([kResponseFrameMessage isEqual:command]) {
 		[[self delegate] stompClient:self messageReceived:body withHeader:headers];
 		
-	// Receipt
-	} else if([kResponseFrameReceipt isEqual:command]) {		
+      // Receipt
+        } else if([kResponseFrameReceipt isEqual:command]) {
 		if([[self delegate] respondsToSelector:@selector(serverDidSendReceipt:withReceiptId:)]) {
 			NSString *receiptId = [headers valueForKey:kResponseHeaderReceiptId];
 			[[self delegate] serverDidSendReceipt:self withReceiptId: receiptId];
-		}	
-	
-	// Error
+                }
+
+      // Error
 	} else if([kResponseFrameError isEqual:command]) {
 		if([[self delegate] respondsToSelector:@selector(serverDidSendError:withErrorMessage:detailedErrorMessage:)]) {
 			NSString *msg = [headers valueForKey:kResponseHeaderErrorMessage];
 			[[self delegate] serverDidSendError:self withErrorMessage: msg detailedErrorMessage: body];
-		}		
+                }
 	}
 }
 
@@ -259,15 +265,15 @@
 - (void)onSocket:(AsyncSocket *)sock didReadData:(NSData*)data withTag:(long)tag {
 	NSData *strData = [data subdataWithRange:NSMakeRange(0, [data length])];
 	NSString *msg = [[NSString alloc] initWithData:strData encoding:NSUTF8StringEncoding];
-    NSMutableArray *contents = (NSMutableArray *)[[msg componentsSeparatedByString:@"\n"] mutableCopy];
+   NSMutableArray *contents = (NSMutableArray *)[[msg componentsSeparatedByString:@"\n"] mutableCopy];
 	if([[contents objectAtIndex:0] isEqual:@""]) {
 		[contents removeObjectAtIndex:0];
 	}
-	NSString *command = [[[contents objectAtIndex:0] copy] autorelease];
-	NSMutableDictionary *headers = [[[NSMutableDictionary alloc] init] autorelease];
-	NSMutableString *body = [[[NSMutableString alloc] init] autorelease];
+        NSString *command = [[contents objectAtIndex:0] copy];
+        NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+        NSMutableString *body = [[NSMutableString alloc] init];
 	BOOL hasHeaders = NO;
-    [contents removeObjectAtIndex:0];
+   [contents removeObjectAtIndex:0];
 	for(NSString *line in contents) {
 		if(hasHeaders) {
 			[body appendString:line];
@@ -284,10 +290,12 @@
 			}
 		}
 	}
-	[msg release];
+
+   // Remove the ending control character
+   [body replaceOccurrencesOfString:kControlChar withString:@"" options:NSLiteralSearch range:NSMakeRange(0, [body length])];
+
 	[self receiveFrame:command headers:headers body:body];
 	[self readFrame];
-	[contents release];
 }
 
 - (void)onSocket:(AsyncSocket *)sock didConnectToHost:(NSString *)host port:(UInt16)port {
@@ -313,15 +321,10 @@
 
 #pragma mark -
 #pragma mark Memory management
--(void) dealloc {
-	delegate = nil;
-	
-	CRV_RELEASE_SAFELY(passcode);
-	CRV_RELEASE_SAFELY(login);
-	CRV_RELEASE_SAFELY(host);
-	CRV_RELEASE_SAFELY(socket);
 
-	[super dealloc];
+- (void)dealloc {
+   socket.delegate = nil;
+        delegate = nil;
 }
 
 @end
